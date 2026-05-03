@@ -1,10 +1,10 @@
 {
     "Name": "SVE Premium Upgrade",
     "Author": "bobkalonger",
-    "Version": "1.0.1",
+    "Version": "1.0.2",
+    "Description": "This mod will shift the SVE Premium Coop and Barn to upgrade the Deluxe Coop and Barn, rather than require new buildings.",
     "UniqueID": "bobkalonger.SVE_PremiumUpgrade",
     "MinimumApiVersion": "4.4.0",
-    "Description": "This mod will shift the SVE Premium Coop and Barn to upgrade the Deluxe Coop and Barn, rather than require new buildings.",
     "UpdateKeys": [ "Nexus:-1" ],
     "ContentPackFor": {
         "UniqueID": "Pathoschild.ContentPatcher",
@@ -18,7 +18,12 @@
         },
         {
             "UniqueID": "bobkalonger.BFS_util",
-            "MinimumVersion": "1.0.0",
+            "MinimumVersion": "1.0.1",
+            "IsRequired": true
+        },
+        {
+            "UniqueID": "bobkalonger.PremiumUpgradeSVE_code",
+            "MinimumVersion": "1.0.2",
             "IsRequired": true
         },
         {
