@@ -49,34 +49,7 @@
                             "Indestructible": false
                         }
             ],
-            "IndoorItemMoves": [
-                {
-                    "Id": "Default_Feeder",
-                    "Source": {
-                        "X": 6,
-                        "Y": 3
-                    },
-                    "Destination": {
-                        "X": 4,
-                        "Y": 4
-                    }
-                },
-                {
-                    "Id": "OldHay",
-                    "Source": {
-                        "X": 8,
-                        "Y": 3
-                    },
-                    "Destination": {
-                        "X": 6,
-                        "Y": 4
-                    },
-                    "Size": {
-                        "X": 12,
-                        "Y": 1
-                    }
-                }
-            ]
+            "IndoorItemMoves": []
         },
         {
             "LogName": "Premium Coop Upgrade",
@@ -125,45 +98,7 @@
                             "Indestructible": false
                         }
             ],
-            "IndoorItemMoves": [
-                {
-                    "Id": "Default_Feeder",
-                    "Source": {
-                        "X": 3,
-                        "Y": 3
-                    },
-                    "Destination": {
-                        "X": 22,
-                        "Y": 4
-                    }
-                },
-                {
-                    "Id": "Default_Incubator",
-                    "Source": {
-                        "X": 2,
-                        "Y": 3
-                    },
-                    "Destination": {
-                        "X": 3,
-                        "Y": 4
-                    }
-                },
-                {
-                    "Id": "OldHay",
-                    "Source": {
-                        "X": 6,
-                        "Y": 3
-                    },
-                    "Destination": {
-                        "X": 5,
-                        "Y": 4
-                    },
-                    "Size": {
-                        "X": 12,
-                        "Y": 1
-                    }
-                }
-            ]
+            "IndoorItemMoves": []
         }
     ]
 }
