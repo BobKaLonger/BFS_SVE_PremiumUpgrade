@@ -1,91 +1,84 @@
 using HarmonyLib;
-using Microsoft.Xna.Framework;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewValley;
-using StardewValley.Buildings;
 
 namespace PremiumUpgradeSVE
 {
-    internal class BuildingPatches
+    public class ModEntry : Mod
     {
+        internal static ModEntry? modInstance;
+        
         private const string PremiumBarn = "FlashShifter.StardewValleyExpandedCP_PremiumBarn";
         private const string PremiumCoop = "FlashShifter.StardewValleyExpandedCP_PremiumCoop";
 
-        private static IMonitor? Monitor;
-
-        internal static void Initialize(IMonitor monitor)
+        public override void Entry(IModHelper helper)
         {
-            Monitor = monitor;
+            modInstance = this;
+            BuildingPatches.Initialize(Monitor);
+            new Harmony(ModManifest.UniqueID).PatchAll();
+
+            helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
+            helper.Events.GameLoop.DayStarted += OnDayStarted;
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(Building), nameof(Building.FinishConstruction))]
-        public static void FinishConstruction_Postfix(Building __instance)
+        internal void MakeIncubatorsMoveable(AnimalHouse indoors)
         {
-            try
+            foreach (var pair in indoors.Objects.Pairs)
             {
-                GameLocation interior = __instance.GetIndoors();
-                if (interior == null)
-                    return;
+                var obj = pair.Value;
+                if (obj.QualifiedItemId == "(BC)101" && obj.questItem.Value)
+                    obj.questItem.Value = false;
+            }
+        }
+
+        private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
+        {
+            Utility.ForEachBuilding(building =>
+            {
+                if (building.indoors.Value is AnimalHouse indoors)
+                    MakeIncubatorsMoveable(indoors);
+                return true;
+            });
+        }
+
+        private void OnDayStarted(object? sender, DayStartedEventArgs e)
+        {
+            Utility.ForEachBuilding(building =>
+            {
+                if (building.buildingType.Value is not (PremiumBarn or PremiumCoop))
+                    return true;
                 
-                switch (__instance.buildingType.Value)
+                if (building.daysUntilUpgrade.Value > 0)
+                    return true;
+                
+                string upgradeKey = $"{ModManifest.UniqueID}/buildingKey";
+                string currentLevel = building.buildingType.Value;
+                building.modData.TryGetValue(upgradeKey, out string? lastMovedLevel);
+
+                if (lastMovedLevel == currentLevel)
+                    return true;
+                
+                var interior = building.GetIndoors();
+                if (interior == null)
+                    return true;
+                
+                interior.reloadMap();
+                building.updateInteriorWarps(interior);
+
+                switch (currentLevel)
                 {
                     case PremiumBarn:
-                        HandlePremiumBarn(interior);
+                        BuildingPatches.HandlePremiumBarn(interior);
                         break;
                     case PremiumCoop:
-                        HandlePremiumCoop(interior);
+                        BuildingPatches.HandlePremiumCoop(interior);
                         break;
                 }
-            }
-            catch (Exception ex)
-            {
-                Monitor?.Log($"Error in FinishConstruction postfix: {ex}", LogLevel.Error);
-            }
-        }
 
-        private static void HandlePremiumBarn(GameLocation interior)
-        {
-            MoveObject(interior, 6, 3, 4, 4);
-
-            MoveBlock(interior, 8, 3, 6, 4, 12, 1);
-        }
-
-        private static void HandlePremiumCoop(GameLocation interior)
-        {
-            MoveObject(interior, 3, 3, 22, 4);
-
-            MoveObject(interior, 2, 3, 3, 4);
-            var incubatorTile = new Vector2(3, 4);
-            if (interior.objects.TryGetValue(incubatorTile, out StardewValley.Object incubator)
-                && incubator.QualifiedItemId == "(BC)101"
-                && incubator.questItem.Value)
-            {
-                incubator.questItem.Value = false;
-            }
-
-            MoveBlock(interior, 6, 3, 5, 4, 12, 1);
-        }
-
-        private static void MoveObject(GameLocation interior, int srcX, int srcY, int dstX, int dstY)
-        {
-            var src = new Vector2(srcX, srcY);
-            var dst = new Vector2(dstX, dstY);
-
-            if (!interior.objects.TryGetValue(src, out StardewValley.Object obj))
-                return;
-            
-            interior.objects.Remove(src);
-            interior.objects.Remove(dst);
-            interior.objects[dst] = obj;
-            obj.TileLocation = dst;
-        }
-
-        private static void MoveBlock(GameLocation interior, int srcX, int srcY, int dstX, int dstY, int width, int height)
-        {
-            for (int dy = 0; dy < height; dy++)
-                for (int dx = 0; dx < width; dx++)
-                    MoveObject(interior, srcX + dx, srcY + dy, dstX + dx, dstY + dy);
+                building.modData[upgradeKey] = currentLevel;
+                return true;
+            });
         }
     }
 }
