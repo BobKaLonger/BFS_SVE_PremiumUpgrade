@@ -3,7 +3,7 @@
     "Author": "bobkalonger",
     "Version": "1.0.2",
     "Description": "Code for SVE Premium Upgrade",
-    "UniqueID": "bobkalonger.PremiumUpgrade_code",
+    "UniqueID": "bobkalonger.PremiumUpgradeSVE_code",
     "EntryDll": "PremiumUpgradeSVE.dll",
     "MinimumApiVersion": "4.4.0",
     "UpdateKeys": [ "Nexus:-1" ],

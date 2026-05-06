@@ -62,9 +62,6 @@ namespace PremiumUpgradeSVE
                 var interior = building.GetIndoors();
                 if (interior == null)
                     return true;
-                
-                interior.reloadMap();
-                building.updateInteriorWarps(interior);
 
                 switch (currentLevel)
                 {

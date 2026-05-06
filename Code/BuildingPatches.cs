@@ -1,6 +1,7 @@
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Buildings;
 
@@ -22,13 +23,27 @@ namespace PremiumUpgradeSVE
         [HarmonyPatch(typeof(Building), nameof(Building.FinishConstruction))]
         public static void FinishConstruction_Postfix(Building __instance)
         {
-            try
+            if (__instance.buildingType.Value is not (PremiumBarn or PremiumCoop))
+                return;
+            
+            string upgradeKey = $"{ModEntry.modInstance!.ModManifest.UniqueID}/buildingKey";
+            string currentLevel = __instance.buildingType.Value;
+
+            __instance.modData.TryGetValue(upgradeKey, out string? lastMovedLevel);
+            if (lastMovedLevel == currentLevel)
+                return;
+
+            ModEntry.modInstance!.Helper.Events.GameLoop.UpdateTicked += DoItemMoves;
+
+            void DoItemMoves(object? sender, UpdateTickedEventArgs e)
             {
-                GameLocation interior = __instance.GetIndoors();
-                if (interior == null)
+                ModEntry.modInstance!.Helper.Events.GameLoop.UpdateTicked -= DoItemMoves;
+
+                GameLocation? interior = __instance.GetIndoors();
+                if (interior == null || interior.map == null)
                     return;
                 
-                switch (__instance.buildingType.Value)
+                switch (currentLevel)
                 {
                     case PremiumBarn:
                         HandlePremiumBarn(interior);
@@ -37,10 +52,8 @@ namespace PremiumUpgradeSVE
                         HandlePremiumCoop(interior);
                         break;
                 }
-            }
-            catch (Exception ex)
-            {
-                Monitor?.Log($"Error in FinishConstruction postfix: {ex}", LogLevel.Error);
+
+                __instance.modData[upgradeKey] = currentLevel;
             }
         }
 
